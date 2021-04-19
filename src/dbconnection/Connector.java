@@ -17,6 +17,7 @@ public class Connector {
 			// connect to mysql 
 			dbConnector = (Connection) DriverManager.getConnection(url,user,password);
 		}catch(Exception e){
+			// print message error
 			System.out.println(e);
 		}  
 		return dbConnector;
