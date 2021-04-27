@@ -10,7 +10,7 @@ import dbconnection.Connector;
 
 public class UserLogin {
 
-	public void login() throws SQLException {
+	public void login() throws Exception {
 		Scanner input = new Scanner(System.in);
 		Connector mySqlCon = new Connector();
 		Connection conn = mySqlCon.dbConnection();
@@ -22,51 +22,35 @@ public class UserLogin {
 		String userNameInput;
 		boolean status = false;
 		if(mySqlCon != null) {
-			UserLoginManagement  userLogin = new UserLoginManagement();
 			java.sql.Statement stmt = conn.createStatement();
+			java.sql.Statement stmtUser = conn.createStatement();
 			java.sql.Statement update = conn.createStatement();
 			do {
 				System.out.println("\t=== LOGIN ===\n");
 				System.out.print("Username: ");
-				userNameInput = input.nextLine();
+				username = input.nextLine();
 				System.out.print("Password: ");
-				pwdInput = input.nextLine();
-				username = userLogin.getUserName(userNameInput);
-				password = userLogin.getPassword(pwdInput);
-				email = userLogin.getUserEmail(userNameInput);
-				if(username.equals(userNameInput) && password.equals(pwdInput)) {
-					ResultSet user = stmt.executeQuery("SELECT * FROM users WHERE password='"+password+"' AND username='"+username+"'");
-					String queryUpdate = "UPDATE users SET login_status='1' WHERE password='"+password+"' AND username='"+username+"'";
+				password = input.nextLine();
+				ResultSet pwd = stmt.executeQuery("SELECT * FROM users WHERE password='"+password+"'");
+				ResultSet user = stmtUser.executeQuery("SELECT * FROM users WHERE username='"+username+"' "
+						+ "OR email='"+username+"'");
+				if(pwd.next() && user.next()) {
+					ResultSet users = stmt.executeQuery("SELECT * FROM users WHERE password='"+password+"' AND username='"+username+"'"
+							+ " OR email='"+username+"'");
+					String queryUpdate = "UPDATE users SET login_status='1' WHERE password='"+password+"' AND username='"+username+"'"
+							+ " OR email='"+username+"'";
 					update.executeUpdate(queryUpdate);
-					while(user.next()) {
-						userPositionID = user.getInt(10);
+					while(users.next()) {
+						userPositionID = users.getInt(10);
 					}
 					status = true;
 					System.out.println("Login Successfully!");
-				}else if(email.equals(userNameInput) && password.equals(pwdInput)) {
-					ResultSet user = stmt.executeQuery("SELECT * FROM users WHERE password='"+password+"' AND email='"+email+"'");
-					String queryUpdate = "UPDATE users SET login_status='1' WHERE password='"+password+"' AND email='"+email+"'";
-					update.executeUpdate(queryUpdate);
-					while(user.next()) {
-						userPositionID = user.getInt(10);
-					}
-					status = true;
-					System.out.println("Login Successfully!");
-				}else if(email.equals(userNameInput) && !password.equals(pwdInput)) {
+				}else if(pwd.next() == false && user.next()) {
 					status = false;
-					System.out.println("Password Invalid!");
-				}else if(username.equals(userNameInput) && !password.equals(pwdInput)) {
+					System.out.println("Password invalid!");
+				}else {
 					status = false;
-					System.out.println("Password Invalid!");
-				}else if(!email.equals(userNameInput) && password.equals(pwdInput)) {
-					status = false;
-					System.out.println("Username Invalid!");
-				}else if(!username.equals(userNameInput) && password.equals(pwdInput)) {
-					status = false;
-					System.out.println("Username Invalid!");
-				}else{
-					status = false;
-					System.out.println("Username and Password Invalid!");
+					System.out.println("Username and Password invalid!");
 				}
 				System.out.println();
 			}while(status != true);
