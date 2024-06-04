@@ -26,4 +26,6 @@ jobs:
             # mandatory
             -Dsonar.projectKey=dso-demo
             -Dsonar.organization=bunsinnanh
+            -Dsonar.tests=tests/
+            -Dsonar.verbose=true
           projectBaseDir: .
